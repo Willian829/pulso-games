@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Pulso · o pulso do mundo dos games</title>
+    <meta
+      name="description"
+      content="Jogos mais jogados do mundo, lançamentos por ano, promoções na Steam, Epic, Xbox e PlayStation, tendências entre streamers e premiações como The Game Awards — atualizado automaticamente."
+    />
+    <meta name="theme-color" content="#07080b" />
+    <meta property="og:title" content="Pulso · o pulso do mundo dos games" />
+    <meta
+      property="og:description"
+      content="Mais jogados, lançamentos, promoções, tendências e premiações dos games em um só lugar."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // aplica o tema salvo antes da renderização (evita "piscar")
+      try {
+        var t = localStorage.getItem('pulso:theme')
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+        else if (window.matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.theme = 'light'
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>O Pulso precisa de JavaScript para funcionar.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,75 @@
+name: Atualizar dados e publicar
+
+on:
+  push:
+    branches: [main]
+  # A cada 3 horas (horário UTC). O GitHub pode atrasar execuções agendadas em alguns minutos.
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Descobrir a URL publicada (para manter o histórico entre execuções)
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+          if [ -n "${{ vars.SITE_URL }}" ]; then
+            BASE="${{ vars.SITE_URL }}"
+          elif [ "$REPO" = "${OWNER}.github.io" ]; then
+            BASE="https://${OWNER}.github.io"
+          else
+            BASE="https://${OWNER}.github.io/${REPO}"
+          fi
+          echo "PREVIOUS_DATA_URL=${BASE%/}/data" >> "$GITHUB_ENV"
+
+      - name: Coletar dados (Steam, Epic, Xbox, PlayStation, CheapShark, Wikipedia…)
+        env:
+          # Opcionais — configure em Settings → Secrets and variables → Actions
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          PULSO_USER_AGENT: PulsoGames/1.0 (+https://github.com/${{ github.repository }})
+        run: npm run data
+
+      - name: Build do site
+        env:
+          VITE_REPO_URL: https://github.com/${{ github.repository }}
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
