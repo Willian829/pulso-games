@@ -5,7 +5,8 @@ import { useSearchParams } from 'react-router-dom'
 import { cleanName, fmtCompact, fmtDay, fmtMoney, fmtNumber, relativeDays } from '../lib/format'
 import { useGameIndex, type GameProfile } from '../lib/games'
 import { trAward } from '../lib/i18n'
-import { storeMeta } from '../lib/stores'
+import { storeFromUrl, storeMeta, twitchCategorySlug } from '../lib/stores'
+import type { StoreId } from '../types'
 import { DiscountBadge, EndsIn, FavButton, GameImage, Platforms, Sparkline, StoreDot, TwitchIcon, cx } from './ui'
 
 const Ctx = createContext<(key: string) => void>(() => {})
@@ -138,6 +139,7 @@ function SheetBody({ game }: { game: GameProfile }) {
   const brl = game.deals.filter((d) => d.currency === 'BRL')
   const usd = game.deals.filter((d) => d.currency === 'USD')
   const bestBrl = brl[0]
+  const links = useMemo(() => buildLinks(game), [game])
   const awardsByEvent = useMemo(() => {
     const m = new Map<string, { name: string; items: GameProfile['awards'] }>()
     for (const a of game.awards) {
@@ -175,6 +177,7 @@ function SheetBody({ game }: { game: GameProfile }) {
 
       <div className="px-5 pb-10 sm:px-6">
         {game.description && <p className="mt-2 text-sm leading-relaxed text-fg-2">{game.description}</p>}
+        <StoreLinks links={links.stores} />
 
         <div className="mt-5 grid grid-cols-2 gap-2.5">
           {steam && (
@@ -355,22 +358,118 @@ function SheetBody({ game }: { game: GameProfile }) {
         {game.charts.length > 0 && (
           <Block title="Nos rankings" icon={<TrendingUp className="size-4" />}>
             <div className="flex flex-wrap gap-2">
-              {game.charts.map((c) => (
-                <span key={c.label} className="rounded-full border border-line bg-surface px-3 py-1 text-xs text-fg-2">
-                  <span className="num font-semibold text-fg">#{c.rank}</span> {c.label}
-                </span>
-              ))}
+              {game.charts.map((c) => {
+                const body = (
+                  <>
+                    <span className="num font-semibold text-fg">#{c.rank}</span> {c.label}
+                  </>
+                )
+                return c.url ? (
+                  <a
+                    key={c.label}
+                    href={c.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 rounded-full border border-line bg-surface px-3 py-1 text-xs text-fg-2 transition hover:border-line-strong hover:text-fg"
+                  >
+                    {body}
+                    <ArrowUpRight className="size-3 text-fg-3" />
+                  </a>
+                ) : (
+                  <span key={c.label} className="rounded-full border border-line bg-surface px-3 py-1 text-xs text-fg-2">
+                    {body}
+                  </span>
+                )
+              })}
             </div>
           </Block>
         )}
 
         <div className="mt-8 flex flex-wrap gap-2">
-          {steam && <ExtLink href={steam.url}>Ver na Steam</ExtLink>}
-          {up?.url && !steam && <ExtLink href={up.url}>{up.url.includes('wikipedia') ? 'Wikipedia' : 'Página do jogo'}</ExtLink>}
-          {game.twitch && <ExtLink href={`https://www.twitch.tv/directory/category/${encodeURIComponent(game.twitch.name.toLowerCase().replace(/\s+/g, '-'))}`}>Twitch</ExtLink>}
-          <ExtLink href={`https://www.youtube.com/results?search_query=${encodeURIComponent(cleanName(game.name) + ' gameplay')}`}>Vídeos no YouTube</ExtLink>
+          {links.extra.map((l) => (
+            <ExtLink key={l.url} href={l.url}>
+              {l.label}
+            </ExtLink>
+          ))}
         </div>
       </div>
+    </div>
+  )
+}
+
+interface LinkItem {
+  label: string
+  url: string
+  store?: StoreId
+}
+
+/**
+ * Todos os links de loja conhecidos para um jogo, um por loja, do mais útil para o menos útil:
+ * grátis → oferta mais barata em cada loja → página da Steam → rankings das lojas → lançamento.
+ */
+function buildLinks(game: GameProfile) {
+  const stores: LinkItem[] = []
+  const seen = new Set<string>()
+  const add = (item: LinkItem) => {
+    const k = item.store ?? item.url
+    if (seen.has(k)) return
+    seen.add(k)
+    stores.push(item)
+  }
+  for (const f of game.free) add({ label: f.status === 'now' ? 'Resgatar grátis na Epic' : 'Ver na Epic Games', url: f.url, store: 'epic' })
+  for (const d of game.deals)
+    add({
+      label: d.linkType === 'search' ? `Buscar oferta na ${storeMeta(d.store).name}` : `Ver oferta na ${storeMeta(d.store).name}`,
+      url: d.url,
+      store: d.store,
+    })
+  if (game.steam) add({ label: 'Ver na Steam', url: game.steam.url, store: 'steam' })
+  for (const c of game.charts) {
+    const s = c.url ? storeFromUrl(c.url) : null
+    if (s && c.url) add({ label: `Ver na ${storeMeta(s).name}`, url: c.url, store: s })
+  }
+  const up = game.upcoming
+  if (up?.steamAppId) add({ label: 'Ver na Steam', url: `https://store.steampowered.com/app/${up.steamAppId}`, store: 'steam' })
+  const upStore = up?.url ? storeFromUrl(up.url) : null
+  if (up?.url && upStore) add({ label: `Ver na ${storeMeta(upStore).name}`, url: up.url, store: upStore })
+
+  const extra: LinkItem[] = []
+  if (up?.url && !upStore) extra.push({ label: up.url.includes('wikipedia') ? 'Wikipedia' : 'IGDB', url: up.url })
+  if (game.twitch) extra.push({ label: 'Twitch', url: `https://www.twitch.tv/directory/category/${twitchCategorySlug(game.twitch.name)}` })
+  extra.push({
+    label: 'Vídeos no YouTube',
+    url: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanName(game.name) + ' gameplay')}`,
+  })
+  return { stores, extra }
+}
+
+function StoreLinks({ links }: { links: LinkItem[] }) {
+  if (!links.length) return null
+  const [first, ...rest] = links
+  return (
+    <div className="mt-4 flex flex-wrap gap-2">
+      <a
+        href={first.url}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-sm font-bold text-accent-ink shadow-[0_8px_24px_-10px_var(--accent)] transition hover:brightness-110"
+      >
+        {first.label}
+        <ArrowUpRight className="size-4" />
+      </a>
+      {rest.slice(0, 5).map((l) => (
+        <a
+          key={l.url}
+          href={l.url}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-2 text-sm font-medium text-fg transition hover:border-line-strong"
+        >
+          {l.store && <StoreDot store={l.store} />}
+          {l.store ? storeMeta(l.store).short : l.label}
+          <ArrowUpRight className="size-3.5 text-fg-3" />
+        </a>
+      ))}
     </div>
   )
 }

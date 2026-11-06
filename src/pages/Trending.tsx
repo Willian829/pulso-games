@@ -26,18 +26,18 @@ export default function Trending() {
         description="O Índice Pulso cruza jogadores ao vivo, vendas nas lojas e audiência nas plataformas de streaming para mostrar o que está realmente dominando a conversa agora."
       />
 
-      <div className="grid gap-8 xl:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="card p-4 sm:p-6">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="font-display text-2xl font-bold">Índice Pulso</h2>
               <p className="mt-1 text-sm text-fg-2">{data ? `Atualizado ${timeAgo(data.updatedAt)}` : 'Carregando…'}</p>
             </div>
-            <details className="group relative text-sm">
-              <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-fg-2 hover:text-fg">
+            <details className="group relative w-full text-sm sm:w-auto">
+              <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-fg-2 hover:text-fg">
                 <Info className="size-3.5" /> Como calculamos
               </summary>
-              <div className="absolute right-0 z-20 mt-2 w-80 rounded-2xl border border-line-strong bg-bg-elev p-4 text-[13px] leading-relaxed text-fg-2 shadow-2xl">
+              <div className="relative z-20 mt-2 w-full rounded-2xl sm:absolute sm:right-0 sm:w-80 border border-line-strong bg-bg-elev p-4 text-[13px] leading-relaxed text-fg-2 shadow-2xl">
                 Cada jogo ganha pontos pela posição em cada ranking: audiência na Twitch (peso 1,25), jogadores simultâneos na Steam (1,0),
                 mais vendidos da PS Store (0,85), mais vendidos da Steam (0,8) e populares da Xbox Store (0,75). Quem aparece em vários
                 rankings ao mesmo tempo sobe.

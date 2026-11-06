@@ -313,3 +313,9 @@ img {
     scroll-behavior: auto !important;
   }
 }
+
+/* Rede de segurança: itens de grade podem encolher abaixo do tamanho do conteúdo
+   (textos truncados não empurram a coluna para fora da tela no celular) */
+.grid > * {
+  min-width: 0;
+}

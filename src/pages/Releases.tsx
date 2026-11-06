@@ -131,7 +131,7 @@ export default function Releases() {
               <span className="relative h-5 w-9 rounded-full bg-surface-3 transition peer-checked:bg-accent after:absolute after:left-0.5 after:top-0.5 after:size-4 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-4" />
               Só destaques
             </label>
-            <SearchInput value={q} onChange={setQ} placeholder="Buscar lançamento…" className="w-full lg:w-60" />
+            <SearchInput value={q} onChange={setQ} placeholder="Buscar lançamento…" className="min-w-0 flex-1 lg:w-60 lg:flex-none" />
           </div>
         </div>
       </div>

@@ -120,7 +120,7 @@ public/data/          dados gerados (também servem de ponto de partida no prime
 
 - Jogos fora da Steam (Fortnite, Minecraft, Roblox, League of Legends) não publicam número de jogadores em tempo real. Eles aparecem pela audiência na Twitch e pelos rankings das lojas.
 - Xbox e PlayStation não têm API pública oficial de ofertas. O pipeline lê os mesmos dados que os sites das lojas usam, então pode precisar de ajuste se elas mudarem o formato. Se o hash da consulta da PS Store mudar, defina `PS_GRID_HASH` no workflow.
-- Lojas do CheapShark mostram preços em dólar.
+- Lojas do CheapShark mostram preços em dólar. O link de redirecionamento do CheapShark trava numa verificação anti-robô, então o botão leva direto à loja: na GOG abre a página do produto; nas demais (Humble, Fanatical, GMG, Epic, Ubisoft, GamersGate, IndieGala, WinGameStore) abre a busca da loja já filtrada pelo jogo e aparece como "Buscar na…".
 - O GitHub pausa workflows agendados depois de 60 dias sem atividade no repositório. Se isso acontecer, reative em **Actions**.
 
 Pulso não é afiliado à Valve, Epic Games, Microsoft, Sony, Twitch, Google ou à The Game Awards. Marcas e imagens pertencem aos respectivos donos.

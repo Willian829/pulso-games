@@ -29,6 +29,30 @@ export const STORES: Record<StoreId, StoreMeta> = {
 
 export const storeMeta = (id: StoreId) => STORES[id] ?? { name: id, short: id, color: '#333', ink: '#fff' }
 
+/** Identifica a loja a partir de uma URL (usado em links de rankings). */
+export function storeFromUrl(url: string): StoreId | null {
+  if (/store\.steampowered\.com/.test(url)) return 'steam'
+  if (/store\.playstation\.com/.test(url)) return 'playstation'
+  if (/xbox\.com/.test(url)) return 'xbox'
+  if (/epicgames\.com/.test(url)) return 'epic'
+  if (/gog\.com/.test(url)) return 'gog'
+  return null
+}
+
+/** Texto do botão de uma oferta: página do produto ou busca da loja. */
+export const dealCta = (store: StoreId, linkType?: 'product' | 'search') =>
+  linkType === 'search' ? `Buscar na ${storeMeta(store).short}` : `Ver na ${storeMeta(store).short}`
+
+/** Slug de categoria da Twitch ("PUBG: BATTLEGROUNDS" → "pubg-battlegrounds"). */
+export const twitchCategorySlug = (name: string) =>
+  name
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[’'™®©]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
 /** Famílias de plataforma para filtros. */
 export const PLATFORM_FAMILIES = [
   { id: 'pc', label: 'PC', match: /^(PC|Mac|Linux)$/ },

@@ -98,7 +98,7 @@ function EventView({ event }: { event: AwardEvent }) {
 
   return (
     <div>
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         {goty && <GotyPanel event={event} category={goty} />}
         {event.leaders.length > 0 && <Leaders event={event} />}
       </div>
@@ -106,7 +106,7 @@ function EventView({ event }: { event: AwardEvent }) {
       {groups.map(([name, cats]) => (
         <section key={name} className="mt-12">
           {groups.length > 1 && <h3 className="mb-4 font-display text-xl font-bold">{tr(name)}</h3>}
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {cats.map((c) => (
               <CategoryCard key={c.name} category={c} />
             ))}

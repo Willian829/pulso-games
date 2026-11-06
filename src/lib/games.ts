@@ -69,6 +69,7 @@ export function buildIndex(d: Partial<Datasets>): Map<string, GameProfile> {
     })
   chart(d['most-played']?.topSellers, 'Mais vendidos · Steam', 40)
   chart(d.trending?.psTopSellers, 'Mais vendidos · PS5', 40)
+  chart(d.trending?.xboxPopular, 'Populares · Xbox', 30)
 
   for (const g of d.trending?.twitch ?? []) {
     const p = get(g.key, g.name)

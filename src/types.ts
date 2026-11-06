@@ -103,6 +103,8 @@ export interface Deal {
   currency: Currency
   image?: string
   url: string
+  /** "search" quando o link abre a busca da loja já filtrada pelo jogo (sem página direta conhecida) */
+  linkType?: 'product' | 'search'
   endsAt?: string | null
   /** 0–100 */
   rating?: number | null

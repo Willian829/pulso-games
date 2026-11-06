@@ -31,7 +31,7 @@ import type {
 import { awardEvents, CEREMONY_DATES, MAX_IMAGE_LOOKUPS, OVERRIDES } from './config.ts'
 import { sleep } from './lib/http.ts'
 import { gameKey, isoNow, log, readPrevious, slugify, uniqBy, writeData } from './lib/util.ts'
-import { fetchCheapSharkDeals, type CheapSharkDeal } from './sources/cheapshark.ts'
+import { CHEAPSHARK_STORES, fetchCheapSharkDeals, fixDealUrl, type CheapSharkDeal } from './sources/cheapshark.ts'
 import { fetchEpicFree } from './sources/epic.ts'
 import { fetchIgdbUpcoming, igdbConfigured, igdbImage, type IgdbGame } from './sources/igdb.ts'
 import { fetchPlayStationDeals, fetchPlayStationTopSellers } from './sources/playstation.ts'
@@ -311,8 +311,9 @@ async function main() {
     cheapshark: cheap ? cheapDeals : null,
   }
   const allDeals: Deal[] = []
+  const activeStores = new Set<string>(['steam', 'xbox', 'playstation', ...Object.values(CHEAPSHARK_STORES)])
   const reuse = (pred: (d: Deal) => boolean, statusId: string) => {
-    const old = prevDeals?.deals.filter(pred) ?? []
+    const old = (prevDeals?.deals.filter((d) => pred(d) && activeStores.has(d.store)) ?? []).map(fixDealUrl)
     if (old.length) {
       allDeals.push(...old)
       markStale(statusId)

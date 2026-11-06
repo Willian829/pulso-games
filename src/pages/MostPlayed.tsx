@@ -56,7 +56,7 @@ export default function MostPlayed() {
 
       {mp && !q && !tag && !freeOnly && <Podium top={mp.steam.slice(0, 3)} />}
 
-      <div className="mt-8 grid gap-8 xl:grid-cols-[1fr_340px]">
+      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
             <SearchInput value={q} onChange={setQ} placeholder="Filtrar o top 100…" className="sm:w-72" />
@@ -134,7 +134,7 @@ export default function MostPlayed() {
 function Podium({ top }: { top: MostPlayedEntry[] }) {
   const open = useOpenGame()
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       {top.map((e, i) => (
         <div key={e.appid} className="group card card-hover relative overflow-hidden">
         <button onClick={() => open(e.key)} className="block w-full text-left" aria-label={`Detalhes de ${cleanName(e.name)}`}>

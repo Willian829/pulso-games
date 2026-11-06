@@ -47,7 +47,7 @@ export function Layout({ children }: { children: ReactNode }) {
   }, [pathname])
 
   return (
-    <div className="relative flex min-h-dvh flex-col">
+    <div className="relative flex min-h-dvh flex-col overflow-x-clip">
       <div className="ambient" />
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-ink">
         Pular para o conteúdo
@@ -156,7 +156,7 @@ function Footer() {
   const active = meta?.sources.filter((s) => !s.skipped).length ?? 0
   return (
     <footer className="border-t border-line pb-24 lg:pb-0">
-      <div className="mx-auto grid max-w-[1320px] gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.2fr_2fr] lg:px-8">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,2fr)] lg:px-8">
         <div>
           <div className="flex items-center gap-2.5">
             <Logo size={28} />

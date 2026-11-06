@@ -74,7 +74,7 @@ export default function Deals() {
           <h2 className="mb-4 flex items-center gap-2 font-display text-xl font-bold">
             <Gift className="size-5 text-accent-text" /> Grátis na Epic Games Store
           </h2>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {[...freeNow, ...freeSoon].map((f, i) => (
               <FreeGameCard key={f.id} game={f} large={i === 0} />
             ))}

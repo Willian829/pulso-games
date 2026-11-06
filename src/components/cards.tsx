@@ -1,7 +1,7 @@
-import { ArrowDown, ArrowUp, Crown, Gift, Minus, Sparkles, Star, Users } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpRight, Crown, Gift, Minus, Sparkles, Star, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cleanName, daysUntil, fmtCompact, fmtDay, fmtMoney, monthShort, parseDay, relativeDays } from '../lib/format'
-import { storeMeta } from '../lib/stores'
+import { dealCta } from '../lib/stores'
 import type { Deal, FreeGame, HypeEntry, MostPlayedEntry, SimpleGame, UpcomingGame } from '../types'
 import { useOpenGame } from './GameSheet'
 import { DiscountBadge, EndsIn, FavButton, GameImage, Platforms, Sparkline, StoreBadge, cx } from './ui'
@@ -43,9 +43,10 @@ export function DealCard({ deal, compact }: { deal: Deal; compact?: boolean }) {
           href={deal.url}
           target="_blank"
           rel="noreferrer"
-          className="mt-3 inline-flex items-center justify-center rounded-xl border border-line bg-surface-2 py-2 text-[13px] font-semibold text-fg transition hover:border-line-strong hover:bg-surface-3"
+          className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-xl border border-line bg-surface-2 px-2 py-2 text-center text-[13px] font-semibold text-fg transition hover:border-line-strong hover:bg-surface-3"
         >
-          Ver na {storeMeta(deal.store).short}
+          <span className="truncate">{dealCta(deal.store, deal.linkType)}</span>
+          <ArrowUpRight className="size-3.5 shrink-0 text-fg-3" />
         </a>
       </div>
     </article>
@@ -89,9 +90,10 @@ export function FreeGameCard({ game, large }: { game: FreeGame; large?: boolean 
         href={game.url}
         target="_blank"
         rel="noreferrer"
-        className="absolute bottom-4 right-4 hidden rounded-full bg-white px-3.5 py-1.5 text-[13px] font-bold text-black shadow-lg transition hover:scale-105 sm:inline-flex"
+        className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[12px] font-bold text-black shadow-lg transition hover:scale-105 sm:bottom-4 sm:right-4 sm:top-auto sm:px-3.5 sm:text-[13px]"
       >
         {now ? 'Resgatar' : 'Ver na loja'}
+        <ArrowUpRight className="size-3.5" />
       </a>
     </article>
   )

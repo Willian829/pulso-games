@@ -49,7 +49,7 @@ export default function Home() {
   return (
     <div>
       {/* ------------------------------------ Hero ------------------------------------ */}
-      <section className="grid items-center gap-8 pb-10 pt-8 sm:pt-12 lg:grid-cols-[1.05fr_1fr] lg:gap-12 lg:pb-14 lg:pt-16">
+      <section className="grid grid-cols-1 items-center gap-8 pb-10 pt-8 sm:pt-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-12 lg:pb-14 lg:pt-16">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <div className="mb-5 inline-flex items-center gap-2.5 rounded-full border border-line bg-surface/60 px-3.5 py-1.5 text-xs font-medium text-fg-2 backdrop-blur">
             <span className="live-dot" />
@@ -128,7 +128,7 @@ export default function Home() {
       </section>
 
       {/* --------------------------- Mais jogados + Em alta --------------------------- */}
-      <section className="mt-14 grid gap-6 lg:grid-cols-[1.25fr_1fr] lg:gap-8">
+      <section className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-8">
         <motion.div {...fade} className="card p-4 sm:p-6">
           <SectionHeader eyebrow="Steam · ao vivo" icon={<span className="live-dot scale-75" />} title="Mais jogados agora" action={{ to: '/mais-jogados', label: 'Top 100' }} />
           <div className="-mx-2">
@@ -154,7 +154,7 @@ export default function Home() {
       {freeNow.length > 0 && (
         <motion.section {...fade} className="mt-16">
           <SectionHeader eyebrow="Epic Games Store" icon={<Gift className="size-3.5 text-accent-text" />} title="Grátis para resgatar" action={{ to: '/promocoes', label: 'Promoções' }} />
-          <div className={cx('grid gap-4', freeNow.length === 1 ? 'md:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-3')}>
+          <div className={cx('grid grid-cols-1 gap-4', freeNow.length === 1 ? 'md:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-3')}>
             {freeNow.slice(0, 3).map((f) => (
               <FreeGameCard key={f.id} game={f} />
             ))}
@@ -205,7 +205,7 @@ function Spotlight({ game, others }: { game: UpcomingGame; others: UpcomingGame[
   const open = useOpenGame()
   return (
     <div className="relative">
-      <div className="absolute -inset-6 -z-10 rounded-[40px] bg-[radial-gradient(closest-side,var(--accent-soft),transparent)] blur-2xl" />
+      <div className="absolute -inset-2 -z-10 rounded-[40px] sm:-inset-6 bg-[radial-gradient(closest-side,var(--accent-soft),transparent)] blur-2xl" />
       <button onClick={() => open(game.key)} className="group relative block w-full overflow-hidden rounded-[28px] border border-line-strong text-left shadow-2xl">
         <div className="zoom-img">
           <GameImage src={game.image} alt={game.title} className="aspect-[4/5] w-full sm:aspect-[16/10]" eager />
@@ -261,7 +261,7 @@ function AwardsTeaser({
   return (
     <div className="relative overflow-hidden rounded-[28px] border border-line-strong bg-surface">
       <div className="absolute inset-0 bg-[radial-gradient(700px_300px_at_100%_0%,var(--gold-soft),transparent),radial-gradient(500px_300px_at_0%_100%,var(--violet-soft),transparent)]" />
-      <div className="relative grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+      <div className="relative grid grid-cols-1 gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-center">
         <div>
           <div className="mb-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-gold">
             <Trophy className="size-3.5" /> Temporada de premiações
