@@ -7,7 +7,7 @@ const current = (): Theme => (document.documentElement.dataset.theme === 'light'
 
 export function setTheme(t: Theme) {
   document.documentElement.dataset.theme = t
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', t === 'light' ? '#f4f5f8' : '#07080b')
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', t === 'light' ? '#f2f3f6' : '#06070a')
   try {
     localStorage.setItem('pulso:theme', t)
   } catch {

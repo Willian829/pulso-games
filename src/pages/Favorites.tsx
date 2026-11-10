@@ -2,7 +2,7 @@ import { Bell, Star, Tag } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useOpenGame } from '../components/GameSheet'
-import { DiscountBadge, EmptyState, FavButton, GameImage, PageHeader, cx } from '../components/ui'
+import { Accent, DiscountBadge, EmptyState, FavButton, GameImage, PageHeader, cx, stagger } from '../components/ui'
 import { useFavorites } from '../lib/favorites'
 import { cleanName, fmtCompact, fmtMoney, relativeDays } from '../lib/format'
 import { useGameIndex, type GameProfile } from '../lib/games'
@@ -21,18 +21,22 @@ export default function Favorites() {
       <PageHeader
         eyebrow="Seus favoritos"
         icon={<Star className="size-3.5" />}
-        title="Sua lista de olho"
+        title={
+          <>
+            Sua lista <Accent>de olho</Accent>
+          </>
+        }
         description="Marque jogos com a estrela para acompanhar promoções, datas de lançamento e jogadores em um só lugar. A lista fica salva neste navegador."
       />
 
       {favs.length === 0 ? (
-        <EmptyState icon={<Star className="size-5" />} title="Nenhum favorito ainda">
+        <EmptyState icon={<Star className="size-6" />} title="Nenhum favorito ainda">
           Toque na estrela de qualquer jogo — nas{' '}
-          <Link to="/promocoes" className="text-accent-text underline">
+          <Link to="/promocoes" className="text-accent-text underline underline-offset-4">
             promoções
           </Link>
           , nos{' '}
-          <Link to="/lancamentos" className="text-accent-text underline">
+          <Link to="/lancamentos" className="text-accent-text underline underline-offset-4">
             lançamentos
           </Link>{' '}
           ou no ranking — para acompanhá-lo aqui.
@@ -40,17 +44,19 @@ export default function Favorites() {
       ) : (
         <>
           {onSale.length > 0 && (
-            <div className="mb-8 flex items-center gap-3 rounded-2xl border border-accent/30 bg-accent-soft px-4 py-3 text-sm">
-              <Bell className="size-4 text-accent-text" />
+            <div className="mb-8 flex items-center gap-3 rounded-2xl bg-accent-soft px-4 py-3.5 text-sm ring-1 ring-inset ring-accent/30">
+              <Bell className="size-4 shrink-0 text-accent-text" />
               <span>
-                <strong className="text-accent-text">{onSale.length}</strong> {onSale.length === 1 ? 'favorito está' : 'favoritos estão'} em promoção
-                ou grátis agora.
+                <strong className="text-accent-text">{onSale.length}</strong> {onSale.length === 1 ? 'favorito está' : 'favoritos estão'} em promoção ou
+                grátis agora.
               </span>
             </div>
           )}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map(({ fav, game }) => (
-              <FavCard key={fav.key} name={fav.name} image={fav.image} gameKey={fav.key} game={game} />
+          <div className="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map(({ fav, game }, i) => (
+              <div key={fav.key} style={stagger(i)}>
+                <FavCard name={fav.name} image={fav.image} gameKey={fav.key} game={game} />
+              </div>
             ))}
           </div>
         </>
@@ -64,25 +70,34 @@ function FavCard({ name, image, gameKey, game }: { name: string; image?: string;
   const deal = game?.deals[0]
   const free = game?.free[0]
   return (
-    <article className="group card card-hover relative overflow-hidden">
+    <article className="group card card-hover h-full overflow-hidden">
       <button onClick={() => open(gameKey)} className="block w-full text-left">
-        <div className="zoom-img relative">
+        <div className="zoom-img shine">
           <GameImage src={game?.image ?? image} alt={name} className="aspect-[460/215] w-full" />
-          {deal && <DiscountBadge value={deal.discount} className="absolute bottom-2.5 left-2.5" />}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          {deal && <DiscountBadge value={deal.discount} className="absolute bottom-2.5 left-2.5 shadow-lg" />}
         </div>
         <div className="p-4">
-          <h3 className="truncate font-semibold">{cleanName(game?.name ?? name)}</h3>
+          <h3 className="truncate text-[15px] font-semibold">{cleanName(game?.name ?? name)}</h3>
           <div className="mt-3 space-y-1.5 text-[13px]">
             {free && <Line tone="accent">{free.status === 'now' ? 'Grátis agora na Epic' : 'Ficará grátis na Epic em breve'}</Line>}
             {deal && (
               <Line tone="accent">
-                <Tag className="mr-1 inline size-3.5" />
+                <Tag className="mr-1.5 inline size-3.5" />
                 {fmtMoney(deal.price, deal.currency)} na {storeMeta(deal.store).name}
                 {game!.deals.length > 1 && <span className="text-fg-3"> · +{game!.deals.length - 1} lojas</span>}
               </Line>
             )}
-            {game?.upcoming?.date && <Line>Lança {relativeDays(game.upcoming.date)} ({game.upcoming.dateText})</Line>}
-            {game?.steam && <Line>{fmtCompact(game.steam.current)} jogando agora · #{game.steam.rank} na Steam</Line>}
+            {game?.upcoming?.date && (
+              <Line>
+                Lança {relativeDays(game.upcoming.date)} ({game.upcoming.dateText})
+              </Line>
+            )}
+            {game?.steam && (
+              <Line>
+                {fmtCompact(game.steam.current)} jogando agora · #{game.steam.rank} na Steam
+              </Line>
+            )}
             {!game && <Line>Sem novidades nos dados atuais.</Line>}
           </div>
         </div>

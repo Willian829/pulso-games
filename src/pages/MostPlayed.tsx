@@ -2,7 +2,22 @@ import { Info, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { MostPlayedRow, RankDelta, SimpleList } from '../components/cards'
 import { useOpenGame } from '../components/GameSheet'
-import { Chip, ErrorBox, FavButton, GameImage, PageHeader, SearchInput, Skeleton, Sparkline, cx } from '../components/ui'
+import {
+  Accent,
+  AnimatedNumber,
+  Chip,
+  ChipRow,
+  ErrorBox,
+  FavButton,
+  GameImage,
+  PageHeader,
+  Reveal,
+  SearchInput,
+  Skeleton,
+  Sparkline,
+  cx,
+  stagger,
+} from '../components/ui'
 import { useDatasets } from '../lib/data'
 import { cleanName, fmtCompact, fmtNumber, timeAgo } from '../lib/format'
 import { normalize } from '../lib/games'
@@ -25,12 +40,11 @@ export default function MostPlayed() {
 
   const list = useMemo(() => {
     const nq = normalize(q)
-    return (mp?.steam ?? []).filter(
-      (e) => (!nq || normalize(e.name).includes(nq)) && (!tag || e.tags.includes(tag)) && (!freeOnly || e.isFree),
-    )
+    return (mp?.steam ?? []).filter((e) => (!nq || normalize(e.name).includes(nq)) && (!tag || e.tags.includes(tag)) && (!freeOnly || e.isFree))
   }, [mp, q, tag, freeOnly])
 
   if (error && !mp) return <ErrorBox error={error} />
+  const filtering = !!q || !!tag || freeOnly
 
   return (
     <div>
@@ -39,44 +53,45 @@ export default function MostPlayed() {
         icon={<span className="live-dot scale-75" />}
         title={
           <>
-            Os mais jogados <span className="text-fg-3">agora</span>
+            Os mais jogados <Accent>agora</Accent>
           </>
         }
-        description={
-          mp ? (
-            <>
-              <strong className="num text-fg">{fmtNumber(mp.totalPlayers)}</strong> pessoas jogando os 100 títulos mais populares da Steam neste
-              momento. Atualizado {timeAgo(mp.updatedAt)}.
-            </>
-          ) : (
-            'Carregando o ranking ao vivo…'
+        description="Ranking por jogadores simultâneos nos 100 títulos mais populares da Steam, com dados oficiais da Valve."
+        aside={
+          mp && (
+            <div className="lg:text-right">
+              <AnimatedNumber value={mp.totalPlayers} className="display block text-[44px] sm:text-[56px]" />
+              <p className="mt-1.5 flex items-center gap-2 text-sm text-fg-2 lg:justify-end">
+                <Users className="size-3.5" /> jogando agora · atualizado {timeAgo(mp.updatedAt)}
+              </p>
+            </div>
           )
         }
       />
 
-      {mp && !q && !tag && !freeOnly && <Podium top={mp.steam.slice(0, 3)} />}
+      {mp && !filtering && <Podium top={mp.steam.slice(0, 3)} />}
 
-      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="mt-10 grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <SearchInput value={q} onChange={setQ} placeholder="Filtrar o top 100…" className="sm:w-72" />
-            <div className="scroller -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <SearchInput value={q} onChange={setQ} placeholder="Filtrar o top 100…" className="sm:w-72 sm:shrink-0" />
+            <ChipRow className="-mx-4 px-4 sm:mx-0 sm:px-0">
               <Chip active={freeOnly} onClick={() => setFreeOnly((v) => !v)}>
                 Gratuitos
               </Chip>
               {tags.map(([t, n]) => (
-                <Chip key={t} active={tag === t} onClick={() => setTag(tag === t ? null : t)} count={n}>
+                <Chip key={t} group="tag" active={tag === t} onClick={() => setTag(tag === t ? null : t)} count={n}>
                   {t}
                 </Chip>
               ))}
-            </div>
+            </ChipRow>
           </div>
 
           <div className="card overflow-hidden">
-            <div className="hidden grid-cols-[56px_minmax(0,1fr)_130px_110px_110px_90px] items-center gap-4 border-b border-line px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-fg-3 md:grid">
+            <div className="eyebrow hidden grid-cols-[56px_minmax(0,1fr)_130px_110px_110px_90px] items-center gap-4 border-b border-line px-5 py-3.5 md:grid">
               <span>#</span>
               <span>Jogo</span>
-              <span>Tendência (7 dias)</span>
+              <span>7 dias</span>
               <span className="text-right">Jogando agora</span>
               <span className="text-right">Pico 24h</span>
               <span className="text-right">Avaliação</span>
@@ -89,9 +104,9 @@ export default function MostPlayed() {
               </div>
             ) : list.length ? (
               <>
-                <div className="hidden md:block">
-                  {list.map((e) => (
-                    <TableRow key={e.appid} e={e} />
+                <div className="stagger hidden md:block">
+                  {list.map((e, i) => (
+                    <TableRow key={e.appid} e={e} i={i} />
                   ))}
                 </div>
                 <div className="p-2 md:hidden">
@@ -101,29 +116,29 @@ export default function MostPlayed() {
                 </div>
               </>
             ) : (
-              <p className="px-6 py-14 text-center text-sm text-fg-2">Nenhum jogo do top 100 corresponde aos filtros.</p>
+              <p className="px-6 py-16 text-center text-sm text-fg-2">Nenhum jogo do top 100 corresponde aos filtros.</p>
             )}
           </div>
 
-          <p className="mt-4 flex gap-2 text-xs leading-relaxed text-fg-3">
+          <p className="mt-5 flex gap-2.5 text-xs leading-relaxed text-fg-3">
             <Info className="mt-0.5 size-3.5 shrink-0" />
-            Ranking por jogadores simultâneos na Steam (dados oficiais da Valve). Jogos fora da Steam — como Fortnite, Minecraft, Roblox
-            e League of Legends — não publicam números em tempo real; acompanhe a audiência deles na aba Em alta.
+            Jogos fora da Steam — como Fortnite, Minecraft, Roblox e League of Legends — não publicam números em tempo real; acompanhe a
+            popularidade deles na aba Em alta.
           </p>
         </div>
 
         <aside className="space-y-6">
           {mp && mp.topSellers.length > 0 && (
-            <div className="card p-4">
-              <h2 className="mb-3 px-2 font-display text-lg font-bold">Mais vendidos · Steam</h2>
+            <Reveal className="card p-4">
+              <h2 className="display mb-3 px-2 pt-1 text-lg">Mais vendidos · Steam</h2>
               <SimpleList items={mp.topSellers.slice(0, 12)} label="Mais vendidos na Steam" />
-            </div>
+            </Reveal>
           )}
           {data.trending && data.trending.psTopSellers.length > 0 && (
-            <div className="card p-4">
-              <h2 className="mb-3 px-2 font-display text-lg font-bold">Mais vendidos · PS5</h2>
+            <Reveal className="card p-4">
+              <h2 className="display mb-3 px-2 pt-1 text-lg">Mais vendidos · PS5</h2>
               <SimpleList items={data.trending.psTopSellers.slice(0, 12)} label="Mais vendidos na PlayStation Store" />
-            </div>
+            </Reveal>
           )}
         </aside>
       </div>
@@ -134,56 +149,57 @@ export default function MostPlayed() {
 function Podium({ top }: { top: MostPlayedEntry[] }) {
   const open = useOpenGame()
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className="stagger grid grid-cols-1 gap-4 md:grid-cols-3">
       {top.map((e, i) => (
-        <div key={e.appid} className="group card card-hover relative overflow-hidden">
-        <button onClick={() => open(e.key)} className="block w-full text-left" aria-label={`Detalhes de ${cleanName(e.name)}`}>
-          <div className="zoom-img relative">
-            <GameImage src={e.capsule ?? e.image} alt={e.name} className="aspect-[616/353] w-full" eager />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-            <span
-              className={cx(
-                'num absolute left-4 top-3 font-display text-6xl font-bold leading-none tracking-tighter drop-shadow-lg',
-                i === 0 ? 'text-accent' : 'text-white/90',
-              )}
-            >
-              {e.rank}
-            </span>
-            <div className="absolute inset-x-0 bottom-0 p-4">
-              <h3 className="truncate font-display text-xl font-bold text-white">{cleanName(e.name)}</h3>
-              <div className="mt-2 flex items-end justify-between gap-3">
-                <div>
-                  <div className="num font-display text-2xl font-bold text-white">{fmtNumber(e.current)}</div>
-                  <div className="flex items-center gap-1 text-xs text-white/70">
-                    <Users className="size-3" /> jogando · pico {fmtCompact(e.peak24h)}
+        <div key={e.appid} className="group card card-hover overflow-hidden" style={stagger(i + 2)}>
+          <button onClick={() => open(e.key)} className="block w-full text-left" aria-label={`Detalhes de ${cleanName(e.name)}`}>
+            <div className="zoom-img shine">
+              <GameImage src={e.capsule ?? e.image} alt={e.name} className="aspect-[616/353] w-full" eager />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/5" />
+              <span
+                className={cx(
+                  'num absolute left-4 top-3 font-display text-[64px] font-semibold leading-none tracking-[-0.06em] drop-shadow-lg',
+                  i === 0 ? 'text-accent' : 'text-white/90',
+                )}
+              >
+                {e.rank}
+              </span>
+              <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                <h3 className="display truncate text-xl text-white sm:text-[22px]">{cleanName(e.name)}</h3>
+                <div className="mt-2.5 flex items-end justify-between gap-3">
+                  <div>
+                    <div className="num font-display text-[26px] font-semibold leading-none text-white">{fmtNumber(e.current)}</div>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-xs text-white/65">
+                      <Users className="size-3" /> jogando · pico {fmtCompact(e.peak24h)}
+                    </div>
                   </div>
+                  <Sparkline points={e.history} width={110} height={38} strokeWidth={2} />
                 </div>
-                <Sparkline points={e.history} width={110} height={36} />
               </div>
             </div>
-          </div>
-        </button>
-        <FavButton gameKey={e.key} name={e.name} image={e.image} className="absolute right-3 top-3" />
+          </button>
+          <FavButton gameKey={e.key} name={e.name} image={e.image} className="absolute right-3 top-3" />
         </div>
       ))}
     </div>
   )
 }
 
-function TableRow({ e }: { e: MostPlayedEntry }) {
+function TableRow({ e, i }: { e: MostPlayedEntry; i: number }) {
   const open = useOpenGame()
   const ratio = e.peak24h ? e.current / e.peak24h : 0
   return (
     <button
       onClick={() => open(e.key)}
-      className="grid w-full grid-cols-[56px_minmax(0,1fr)_130px_110px_110px_90px] items-center gap-4 border-b border-line px-5 py-2.5 text-left transition last:border-0 hover:bg-surface-2"
+      style={stagger(i)}
+      className="grid w-full grid-cols-[56px_minmax(0,1fr)_130px_110px_110px_90px] items-center gap-4 border-b border-line px-5 py-2.5 text-left transition-colors duration-200 last:border-0 hover:bg-surface-2"
     >
       <div className="flex items-center gap-2">
-        <span className={cx('num w-7 font-display text-lg font-bold', e.rank <= 3 ? 'text-accent-text' : 'text-fg')}>{e.rank}</span>
+        <span className={cx('num w-7 font-display text-lg font-semibold', e.rank <= 3 ? 'text-accent-text' : 'text-fg')}>{e.rank}</span>
         <RankDelta rank={e.rank} prev={e.prevRank} />
       </div>
       <div className="flex min-w-0 items-center gap-3.5">
-        <GameImage src={e.image} alt={e.name} className="h-12 w-[104px] shrink-0 rounded-lg" />
+        <GameImage src={e.image} alt={e.name} className="h-12 w-[104px] shrink-0 rounded-lg ring-1 ring-line" />
         <div className="min-w-0">
           <div className="truncate text-[14px] font-semibold">{cleanName(e.name)}</div>
           <div className="truncate text-xs text-fg-3">
@@ -195,8 +211,8 @@ function TableRow({ e }: { e: MostPlayedEntry }) {
       <Sparkline points={e.history} width={120} height={32} />
       <div className="text-right">
         <div className="num text-[15px] font-semibold">{fmtNumber(e.current)}</div>
-        <div className="ml-auto mt-1 h-1 w-16 overflow-hidden rounded-full bg-surface-3">
-          <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(100, ratio * 100)}%` }} />
+        <div className="ml-auto mt-1.5 h-[3px] w-16 overflow-hidden rounded-full bg-surface-3">
+          <div className="h-full rounded-full bg-accent-text" style={{ width: `${Math.min(100, ratio * 100)}%` }} />
         </div>
       </div>
       <div className="num text-right text-sm text-fg-2">{fmtNumber(e.peak24h)}</div>
@@ -204,7 +220,7 @@ function TableRow({ e }: { e: MostPlayedEntry }) {
         {e.reviewPct ? (
           <span
             className={cx(
-              'num inline-flex rounded-md px-1.5 py-0.5 text-xs font-semibold',
+              'num inline-flex rounded-md px-1.5 py-0.5 font-mono text-[11px] font-medium',
               e.reviewPct >= 80 ? 'bg-up/12 text-up' : e.reviewPct >= 60 ? 'bg-gold-soft text-gold' : 'bg-down/12 text-down',
             )}
             title={e.reviewLabel}

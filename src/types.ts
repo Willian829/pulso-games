@@ -64,6 +64,8 @@ export interface MostPlayedEntry {
   image: string
   capsule?: string
   hero?: string
+  /** capa vertical (600x900) */
+  poster?: string
   url: string
   current: number
   peak24h: number
@@ -163,6 +165,8 @@ export interface UpcomingGame {
   developer?: string
   publisher?: string
   image?: string
+  /** arte grande em paisagem, quando disponível */
+  hero?: string
   steamAppId?: number
   /** posição entre os mais desejados da Steam */
   wishlistRank?: number
@@ -225,6 +229,8 @@ export interface HypeEntry {
   key: string
   name: string
   image?: string
+  hero?: string
+  poster?: string
   score: number
   signals: HypeSignal[]
 }

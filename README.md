@@ -114,7 +114,9 @@ public/data/          dados gerados (também servem de ponto de partida no prime
 - **Frequência de atualização**: altere o `cron` em `.github/workflows/deploy.yml`.
 - **Premiações**: edite `awardEvents()` e `CEREMONY_DATES` em `scripts/pipeline/config.ts`.
 - **Capa errada ou faltando**: adicione uma entrada em `OVERRIDES` (`config.ts`) com o `steamAppId` ou a URL da imagem.
-- **Cores e fontes**: os tokens de design ficam no topo de `src/styles.css` (tema escuro e claro).
+- **Cores e fontes**: os tokens de design ficam no topo de `src/styles.css` (tema escuro e claro). A interface usa Geist, com Instrument Serif itálica nas palavras de destaque.
+- **Cor de cada seção**: a luz de fundo muda por página; as cores ficam em `html[data-section='…']` no mesmo arquivo.
+- **Destaques do início**: os slides do carrossel são montados em `src/pages/Home.tsx` (lançamento, mais jogado, grátis, em alta e premiações).
 
 ## Limitações conhecidas
 

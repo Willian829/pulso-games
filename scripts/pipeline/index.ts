@@ -163,17 +163,18 @@ async function main() {
   log('steam', `catálogo com ${new Set(appids).size} apps`)
 
   // Índice global de imagens por chave de jogo (qualquer fonte pode preencher a arte de outra)
-  const images = new Map<string, { wide?: string; poster?: string }>()
-  const addImage = (key: string, wide?: string, poster?: string) => {
+  const images = new Map<string, { wide?: string; poster?: string; hero?: string }>()
+  const addImage = (key: string, wide?: string, poster?: string, hero?: string) => {
     if (!key) return
     const cur = images.get(key) ?? {}
     if (wide && !cur.wide) cur.wide = wide
     if (poster && !cur.poster) cur.poster = poster
+    if (hero && !cur.hero) cur.hero = hero
     images.set(key, cur)
   }
   for (const id of new Set(appids)) {
     const it = catalog.get(id)
-    if (it) addImage(gameKey(it.name), it.header, it.poster)
+    if (it) addImage(gameKey(it.name), it.header, it.poster, it.hero)
   }
   for (const d of [...(xboxDeals ?? []), ...(psDeals ?? []), ...(epicFree ?? [])]) addImage(d.key, d.image)
   for (const g of [...(psTop ?? []), ...(xboxPopular ?? [])]) addImage(g.key, g.image)
@@ -202,7 +203,7 @@ async function main() {
     await catalog.ensure([appid])
     const it = catalog.get(appid)
     const wide = it?.header ?? legacyHeader(appid)
-    addImage(key, wide, it?.poster)
+    addImage(key, wide, it?.poster, it?.hero)
     return wide
   }
 
@@ -222,6 +223,7 @@ async function main() {
         name: it?.name ?? prev?.name ?? `App ${r.appid}`,
         image: it?.header ?? prev?.image ?? legacyHeader(r.appid),
         capsule: it?.capsule,
+        poster: it?.poster,
         hero: it?.hero,
         url: it?.url ?? `https://store.steampowered.com/app/${r.appid}`,
         current: r.concurrent,
@@ -516,6 +518,7 @@ async function main() {
   const upcomingList = [...upcomingMap.values()]
   for (const g of upcomingList) {
     if (!g.image) g.image = images.get(g.key)?.wide ?? prevUp.get(g.key)?.image
+    g.hero = images.get(g.key)?.hero ?? prevUp.get(g.key)?.hero
     if (!g.steamAppId && prevUp.get(g.key)?.steamAppId) g.steamAppId = prevUp.get(g.key)!.steamAppId
   }
   // (as buscas de capa que faltarem acontecem no fim, depois de tendências e premiações)
@@ -567,11 +570,15 @@ async function main() {
         const { w, n } = WEIGHTS[x.source]
         return s + w * (1 - (x.rank - 1) / n)
       }, 0)
-      return { key, name: v.name, image: images.get(key)?.wide, score: Math.round(score * 100) / 100, signals: v.signals.sort((a, b) => a.rank - b.rank) }
+      return { key, name: v.name, image: images.get(key)?.wide, hero: images.get(key)?.hero, poster: images.get(key)?.poster, score: Math.round(score * 100) / 100, signals: v.signals.sort((a, b) => a.rank - b.rank) }
     })
     .sort((a, b) => b.score - a.score)
     .slice(0, 40)
-  for (const h of hype) if (!h.image) h.image = await imageFor(h.name)
+  for (const h of hype) {
+    if (!h.image) h.image = await imageFor(h.name)
+    h.hero = h.hero ?? images.get(h.key)?.hero
+    h.poster = h.poster ?? images.get(h.key)?.poster
+  }
 
   const trendingData: TrendingData = {
     updatedAt: isoNow(),
@@ -674,6 +681,7 @@ async function main() {
   for (const g of needArt) {
     if (lookups >= MAX_IMAGE_LOOKUPS) break
     g.image = await imageFor(g.title)
+    g.hero = g.hero ?? images.get(g.key)?.hero
   }
 
   /* ------------------------------------- Saída -------------------------------------- */
